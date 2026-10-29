@@ -27,6 +27,48 @@ test.describe('Open roles listing', () => {
         await expect(page.getByTestId('apply-form')).toBeVisible();
     });
 
+    test('filters roles by department and location and resets the filters', async ({ page }) => {
+        await page.goto('/');
+        const departmentFilter = page.getByTestId('department-filter');
+        const locationFilter = page.getByTestId('location-filter');
+        const roleCards = page.getByTestId('role-card').filter({ visible: true });
+
+        await departmentFilter.selectOption({ label: 'Technology' });
+        await expect(roleCards).toHaveCount(2);
+        await expect(page.getByTestId('roles-count')).toHaveText(
+            `Showing 2 of ${expectedRoleCount} roles`,
+        );
+
+        await locationFilter.selectOption({ label: 'Remote (US & Canada)' });
+        await expect(roleCards).toHaveCount(2);
+
+        await departmentFilter.selectOption({ label: 'Finance' });
+        await expect(roleCards).toHaveCount(0);
+        await expect(page.getByTestId('filtered-empty-state')).toBeVisible();
+        await expect(page.getByTestId('empty-state-text')).toHaveText(
+            'No roles match these filters. Try changing or resetting your filters.',
+        );
+
+        await page.getByTestId('filters-reset').click();
+        await expect(roleCards).toHaveCount(expectedRoleCount);
+        await expect(page.getByTestId('filtered-empty-state')).toBeHidden();
+        await expect(page.getByTestId('roles-count')).toHaveText(
+            `Showing ${expectedRoleCount} of ${expectedRoleCount} roles`,
+        );
+    });
+
+    test('filters roles by location alone', async ({ page }) => {
+        await page.goto('/');
+        await page.getByTestId('location-filter').selectOption({
+            label: 'Woodinville, WA, USA',
+        });
+
+        await expect(page.getByTestId('role-card').filter({ visible: true })).toHaveCount(3);
+        await expect(page.getByTestId('roles-count')).toHaveText(
+            `Showing 3 of ${expectedRoleCount} roles`,
+        );
+    });
+
     for (const { title, location } of [
         { title: 'Senior Frontend Engineer', location: 'Remote (US & Canada)' },
         { title: 'Financial Analyst', location: 'Woodinville, WA, USA' },

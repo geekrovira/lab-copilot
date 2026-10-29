@@ -14,6 +14,19 @@ export function sortByNewest(jobs: Job[]): Job[] {
     );
 }
 
+/** Filter jobs by an optional department and location without mutating input. */
+export function filterJobs(
+    jobs: Job[],
+    department: string,
+    location: string,
+): Job[] {
+    return jobs.filter(
+        (job) =>
+            (!department || job.department === department) &&
+            (!location || job.location === location),
+    );
+}
+
 /**
  * Format an ISO-8601 date as a human-readable posted date,
  * e.g. "January 5, 2027". Falls back to the raw value if unparseable.
